@@ -61,7 +61,7 @@ test_pipeline = [
         img_scale = (448, 448),
         flip=False,
         transforms=[
-            dict(type='Pad', size_divisor=32),
+            dict(type='Pad', size_divisor=1),
             dict(type='Normalize', **img_norm_cfg),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img'], meta_keys = ['filename', 'ori_filename', 'ori_shape',
