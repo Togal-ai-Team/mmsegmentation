@@ -81,18 +81,26 @@ def parse_md(md_file):
     code_version = None
     repo_url = None
 
+    # To avoid re-counting number of backbone model in OpenMMLab,
+    # if certain model in configs folder is backbone whose name is already
+    # recorded in MMClassification, then the `COLLECTION` dict of this model
+    # in MMSegmentation should be deleted, and `In Collection` in `Models`
+    # should be set with head or neck of this config file.
+    is_backbone = None
+
     with open(md_file, 'r') as md:
         lines = md.readlines()
         i = 0
         current_dataset = ''
         while i < len(lines):
             line = lines[i].strip()
+            # In latest README.md the title and url are in the third line.
+            if i == 2:
+                paper_url = lines[i].split('](')[1].split(')')[0]
+                paper_title = lines[i].split('](')[0].split('[')[1]
             if len(line) == 0:
                 i += 1
                 continue
-            if line[:2] == '# ':
-                paper_title = line.replace('# ', '')
-                i += 1
             elif line[:3] == '<a ':
                 content = etree.HTML(line)
                 node = content.xpath('//a')[0]
@@ -112,20 +120,17 @@ def parse_md(md_file):
                     assert repo_url is not None, (
                         f'{collection_name} hasn\'t official repo url.')
                 i += 1
-            elif line[:9] == '<summary ':
-                content = etree.HTML(line)
-                nodes = content.xpath('//a')
-                assert len(nodes) == 1, (
-                    'summary tag should only have single a tag.')
-                paper_url = nodes[0].get('href', None)
-                i += 1
             elif line[:4] == '### ':
                 datasets.append(line[4:])
                 current_dataset = line[4:]
                 i += 2
+            elif line[:15] == '<!-- [BACKBONE]':
+                is_backbone = True
+                i += 1
             elif line[0] == '|' and (
                     i + 1) < len(lines) and lines[i + 1][:3] == '| -':
                 cols = [col.strip() for col in line.split('|')]
+                method_id = cols.index('Method')
                 backbone_id = cols.index('Backbone')
                 crop_size_id = cols.index('Crop Size')
                 lr_schd_id = cols.index('Lr schd')
@@ -157,15 +162,17 @@ def parse_md(md_file):
                             model_name = fn[:-3]
                     fps = els[fps_id] if els[fps_id] != '-' and els[
                         fps_id] != '' else -1
-                    mem = els[mem_id] if els[mem_id] != '-' and els[
-                        mem_id] != '' else -1
+                    mem = els[mem_id].split(
+                        '\\'
+                    )[0] if els[mem_id] != '-' and els[mem_id] != '' else -1
                     crop_size = els[crop_size_id].split('x')
                     assert len(crop_size) == 2
+                    method = els[method_id].split()[0].split('-')[-1]
                     model = {
                         'Name':
                         model_name,
                         'In Collection':
-                        collection_name,
+                        method,
                         'Metadata': {
                             'backbone': els[backbone_id],
                             'crop size': f'({crop_size[0]},{crop_size[1]})',
@@ -176,7 +183,7 @@ def parse_md(md_file):
                                 'Task': 'Semantic Segmentation',
                                 'Dataset': current_dataset,
                                 'Metrics': {
-                                    'mIoU': float(els[ss_id]),
+                                    cols[ss_id]: float(els[ss_id]),
                                 },
                             },
                         ],
@@ -201,12 +208,12 @@ def parse_md(md_file):
                             'batch size':
                             1,
                             'mode':
-                            'FP32',
+                            'FP32' if 'fp16' not in config else 'FP16',
                             'resolution':
                             f'({crop_size[0]},{crop_size[1]})'
                         }]
                     if mem != -1:
-                        model['Metadata']['memory (GB)'] = float(mem)
+                        model['Metadata']['Training Memory (GB)'] = float(mem)
                     # Only have semantic segmentation now
                     if ms_id and els[ms_id] != '-' and els[ms_id] != '':
                         model['Results'][0]['Metrics'][
@@ -219,6 +226,7 @@ def parse_md(md_file):
     flag = (code_url is not None) and (paper_url is not None) and (repo_url
                                                                    is not None)
     assert flag, f'{collection_name} readme error'
+    collection['Name'] = method
     collection['Metadata']['Training Data'] = datasets
     collection['Code']['URL'] = code_url
     collection['Code']['Version'] = code_version
@@ -238,8 +246,10 @@ def parse_md(md_file):
                     collection.pop(check_key)
                 else:
                     collection[check_key].pop(key)
-
-    result = {'Collections': [collection], 'Models': models}
+    if is_backbone:
+        result = {'Models': models}
+    else:
+        result = {'Collections': [collection], 'Models': models}
     yml_file = f'{md_file[:-9]}{collection_name}.yml'
     return dump_yaml_and_check_difference(result, yml_file)
 
@@ -254,9 +264,12 @@ def update_model_index():
     yml_files = glob.glob(osp.join(configs_dir, '**', '*.yml'), recursive=True)
     yml_files.sort()
 
+    # add .replace('\\', '/') to avoid Windows Style path
     model_index = {
-        'Import':
-        [osp.relpath(yml_file, MMSEG_ROOT) for yml_file in yml_files]
+        'Import': [
+            osp.relpath(yml_file, MMSEG_ROOT).replace('\\', '/')
+            for yml_file in yml_files
+        ]
     }
     model_index_file = osp.join(MMSEG_ROOT, 'model-index.yml')
     is_different = dump_yaml_and_check_difference(model_index,

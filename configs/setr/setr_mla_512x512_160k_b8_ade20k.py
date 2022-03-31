@@ -4,8 +4,12 @@ _base_ = [
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    pretrained='pretrain/vit_large_patch16_384.pth',
-    backbone=dict(img_size=(512, 512), drop_rate=0.),
+    pretrained=None,
+    backbone=dict(
+        img_size=(512, 512),
+        drop_rate=0.,
+        init_cfg=dict(
+            type='Pretrained', checkpoint='pretrain/vit_large_p16.pth')),
     decode_head=dict(num_classes=150),
     auxiliary_head=[
         dict(

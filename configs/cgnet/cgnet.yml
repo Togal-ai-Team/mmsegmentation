@@ -1,10 +1,10 @@
 Collections:
-- Name: cgnet
+- Name: CGNet
   Metadata:
     Training Data:
     - Cityscapes
   Paper:
-    URL: https://arxiv.org/pdf/1811.08201.pdf
+    URL: https://arxiv.org/abs/1811.08201
     Title: 'CGNet: A Light-weight Context Guided Network for Semantic Segmentation'
   README: configs/cgnet/README.md
   Code:
@@ -14,7 +14,7 @@ Collections:
     Code: https://github.com/wutianyiRosun/CGNet
 Models:
 - Name: cgnet_680x680_60k_cityscapes
-  In Collection: cgnet
+  In Collection: CGNet
   Metadata:
     backbone: M3N21
     crop size: (680,680)
@@ -26,7 +26,7 @@ Models:
       batch size: 1
       mode: FP32
       resolution: (680,680)
-    memory (GB): 7.5
+    Training Memory (GB): 7.5
   Results:
   - Task: Semantic Segmentation
     Dataset: Cityscapes
@@ -36,7 +36,7 @@ Models:
   Config: configs/cgnet/cgnet_680x680_60k_cityscapes.py
   Weights: https://download.openmmlab.com/mmsegmentation/v0.5/cgnet/cgnet_680x680_60k_cityscapes/cgnet_680x680_60k_cityscapes_20201101_110253-4c0b2f2d.pth
 - Name: cgnet_512x1024_60k_cityscapes
-  In Collection: cgnet
+  In Collection: CGNet
   Metadata:
     backbone: M3N21
     crop size: (512,1024)
@@ -48,7 +48,7 @@ Models:
       batch size: 1
       mode: FP32
       resolution: (512,1024)
-    memory (GB): 8.3
+    Training Memory (GB): 8.3
   Results:
   - Task: Semantic Segmentation
     Dataset: Cityscapes
