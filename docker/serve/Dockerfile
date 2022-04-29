@@ -27,7 +27,7 @@ RUN pip install torchserve torch-model-archiver nvgpu tensorboardX timm efficien
 ARG PYTORCH
 ARG CUDA
 RUN ["/bin/bash", "-c", "pip install mmcv-full==${MMCV} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${PYTORCH}/index.html"]
-RUN pip install mmsegmentation==${MMSEG}
+RUN pip install -v -e .
 
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
