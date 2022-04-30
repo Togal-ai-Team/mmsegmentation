@@ -42,7 +42,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
 
 COPY mmsegmentation/docker/serve/config.properties /home/model-server/config.properties
 RUN mkdir /home/model-server/model-store && chown -R model-server /home/model-server/model-store
-COPY ml_walls.mar /home/model-server/model-store
+COPY mmsegmentation/docker/serve/ml_walls.mar /home/model-server/model-store
 EXPOSE 8080 8081 8082
 
 USER model-server
