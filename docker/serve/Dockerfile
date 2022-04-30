@@ -30,7 +30,7 @@ ARG PYTORCH
 ARG CUDA
 RUN ["/bin/bash", "-c", "pip install mmcv-full==${MMCV} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${PYTORCH}/index.html"]
 
-RUN pip install -v mmsegmentation
+RUN pip install -v ./mmsegmentation
 
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
