@@ -36,7 +36,7 @@ RUN pip install -v .
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY mmsegmentation/docker/serve/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R model-server /home/model-server
