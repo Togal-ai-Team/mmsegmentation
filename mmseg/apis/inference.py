@@ -60,6 +60,8 @@ class LoadImage:
         else:
             results['filename'] = None
             results['ori_filename'] = None
+        print("Within LoadImage data type:")
+        print(type(results['img']))
         img = mmcv.imread(results['img'])
         results['img'] = img
         results['img_shape'] = img.shape
@@ -83,6 +85,8 @@ def inference_segmentor(model, img):
     # build the data pipeline
     test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
     test_pipeline = Compose(test_pipeline)
+    print("Within inference_segmentor data type:")
+    print(type(img))
     # prepare data
     data = dict(img=img)
     data = test_pipeline(data)
