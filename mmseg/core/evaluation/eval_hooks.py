@@ -69,7 +69,7 @@ class EvalHook(_EvalHook):
                     continue
                 if img_tensor_stack is None:
                     img_tensor_stack = data['img'][0]
-                    segmap_tensor_stack = unsqueeze(Tensor(results[i][1, ...]), 0)
+                    segmap_tensor_stack = unsqueeze(Tensor(results[i]), 0)
                     # annotations
                     ann_filename = data['img_metas'][0].data[0][0]['filename'].replace('images', 'annotations')
                     gt_bytes = self.file_client.get(ann_filename)
@@ -79,7 +79,7 @@ class EvalHook(_EvalHook):
                     # img
                     img_tensor_stack = cat((img_tensor_stack, data['img'][0]), 0)
                     # segmentation map
-                    segmap_tensor_stack = cat((segmap_tensor_stack, unsqueeze(Tensor(results[i][1, ...]), 0)), 0)
+                    segmap_tensor_stack = cat((segmap_tensor_stack, unsqueeze(Tensor(results[i]), 0)), 0)
                     # annotation
                     ann_filename = data['img_metas'][0].data[0][0]['filename'].replace('images', 'annotations')
                     gt_bytes = self.file_client.get(ann_filename)
@@ -120,9 +120,6 @@ class EvalHook(_EvalHook):
         runner.log_buffer.clear()
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
 
-        #apply argmax for evaluation
-        for i, res in enumerate(results):
-            results[i] = np.argmax(res, axis=0)
         key_score = self.evaluate(runner, results)
 
         if self.save_best:
