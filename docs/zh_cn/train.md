@@ -13,7 +13,7 @@ evaluation = dict(interval=4000)  # 每4000 iterations 评估一次模型的性�
 **\*重要提示\***: 在配置文件里的默认学习率是针对4卡 GPU 和2张图/GPU (此时 batchsize = 4x2 = 8)来设置的。
 同样，您也可以使用8卡 GPU 和 1张图/GPU 的设置，因为所有的模型均使用 cross-GPU 的 SyncBN 模式。
 
-我们可以在训练速度和 GPU 显存之间做平衡。当模型或者 Batch Size 比较大的时，可以传递`--cfg-options model.backbone.with_cp=True` ，使用 `with_cp` 来节省显存，但是速度会更慢，因为原先使用 `ith_cp` 时，是逐层反向传播(Back Propagation, BP)，不会保存所有的梯度。
+我们可以在训练速度和 GPU 显存之间做平衡。当模型或者 Batch Size 比较大的时，可以传递`--cfg-options model.backbone.with_cp=True` ，使用 `with_cp` 来节省显存，但是速度会更慢，因为原先使用 `with_cp` 时，是逐层反向传播(Back Propagation, BP)，不会保存所有的梯度。
 
 ### 使用单台机器训练
 
@@ -27,7 +27,7 @@ python tools/train.py ${CONFIG_FILE} [可选参数]
 
 #### 使用 CPU 训练
 
-使用 CPU 训练的流程和使用单 GPU 训练的流程一致，我们仅需要在训练流程开始前禁用 GPU。
+如果计算机没有 GPU，那么使用 CPU 训练的流程和使用单 GPU 训练的流程一致。如果计算机有 GPU 但是想使用 CPU，我们仅需要在训练流程开始前禁用 GPU。
 
 ```shell
 export CUDA_VISIBLE_DEVICES=-1

@@ -3,8 +3,8 @@ ARG CUDA="11.3"
 ARG CUDNN="8"
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 
-ARG MMCV="1.4.4"
-ARG MMSEG="0.22.0"
+ARG MMCV="1.5.0"
+ARG MMSEG="0.27.0"
 
 ENV PYTHONUNBUFFERED TRUE
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub

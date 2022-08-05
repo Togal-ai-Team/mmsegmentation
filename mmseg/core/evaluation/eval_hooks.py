@@ -40,6 +40,8 @@ class EvalHook(_EvalHook):
         self.pre_eval = pre_eval
         self.log_tb = log_tb
         self.log_wandb = log_wandb
+        self.latest_results = None
+
         if efficient_test:
             warnings.warn(
                 'DeprecationWarning: ``efficient_test`` for evaluation hook '
@@ -117,6 +119,7 @@ class EvalHook(_EvalHook):
 
                 wandb.log({"floorplan": floorplans_wandb})
 
+        self.latest_results = results
         runner.log_buffer.clear()
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
 
@@ -151,6 +154,7 @@ class DistEvalHook(_DistEvalHook):
                  **kwargs):
         super().__init__(*args, by_epoch=by_epoch, **kwargs)
         self.pre_eval = pre_eval
+        self.latest_results = None
         if efficient_test:
             warnings.warn(
                 'DeprecationWarning: ``efficient_test`` for evaluation hook '
@@ -187,7 +191,7 @@ class DistEvalHook(_DistEvalHook):
             tmpdir=tmpdir,
             gpu_collect=self.gpu_collect,
             pre_eval=self.pre_eval)
-
+        self.latest_results = results
         runner.log_buffer.clear()
 
         if runner.rank == 0:
