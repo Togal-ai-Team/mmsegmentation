@@ -28,7 +28,8 @@ RUN pip install torchserve torch-model-archiver nvgpu protobuf==3.20.1 tensorboa
 # MMLAB
 ARG PYTORCH
 ARG CUDA
-RUN ["/bin/bash", "-c", "pip install mmcv-full==${MMCV} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${PYTORCH}/index.html"]
+RUN ["/bin/bash", "-c", "pip install mmcv==${MMCV} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${PYTORCH}/index.html"]
+
 
 COPY mmsegmentation mmsegmentation
 RUN pip install -e mmsegmentation
