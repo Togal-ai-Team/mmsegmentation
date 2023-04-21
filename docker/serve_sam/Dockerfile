@@ -1,9 +1,9 @@
-ARG PYTORCH="1.11.0"
-ARG CUDA="11.3"
+ARG PYTORCH="2.0.0"
+ARG CUDA="11.7"
 ARG CUDNN="8"
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 
-ARG MMCV="1.5.0"
+ARG MMCV="2.0.0"
 ARG MMSEG="0.30.0"
 
 ENV PYTHONUNBUFFERED TRUE
@@ -36,7 +36,7 @@ RUN pip install -e mmsegmentation
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
 
-COPY mmsegmentation/docker/serve/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY mmsegmentation/docker/serve_sam/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R model-server /home/model-server
