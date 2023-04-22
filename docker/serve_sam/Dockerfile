@@ -34,6 +34,11 @@ RUN ["/bin/bash", "-c", "pip install mmcv==${MMCV} -f https://download.openmmlab
 COPY mmsegmentation mmsegmentation
 RUN pip install -e mmsegmentation
 
+RUN git clone -b dev https://github.com/open-mmlab/mmpretrain.git /mmpretrain
+RUN pip3 install -e /mmpretrain
+
+ENV PYTHONPATH "/workspace/mmsegmentation/projects/sam_inference_demo:/workspace/mmpretrain"
+
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
 
