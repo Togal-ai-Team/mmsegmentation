@@ -2,11 +2,11 @@
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 data_preprocessor = dict(
     type='SegDataPreProcessor',
-    mean=[123.675, 116.28, 103.53],
-    std=[58.395, 57.12, 57.375],
+    mean=[127.5, 127.5, 127.5],
+    std=[127.5, 127.5, 127.5],
     bgr_to_rgb=True,
-    pad_val=0,
-    seg_pad_val=255)
+    pad_val=255,
+    seg_pad_val=0)
 model = dict(
     type='EncoderDecoder',
     data_preprocessor=data_preprocessor,
