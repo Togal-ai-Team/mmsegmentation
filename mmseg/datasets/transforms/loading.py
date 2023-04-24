@@ -127,6 +127,104 @@ class LoadAnnotations(MMCV_LoadAnnotations):
         repr_str += f'backend_args={self.backend_args})'
         return repr_str
 
+@TRANSFORMS.register_module()
+class LoadMultiLabelAnnotations(MMCV_LoadAnnotations):
+    """Load annotations for semantic segmentation provided by dataset.
+
+    The annotation format is as the following:
+
+    .. code-block:: python
+
+        {
+            # Filename of semantic segmentation ground truth file.
+            'seg_map_path': 'a/b/c'
+        }
+
+    After this module, the annotation has been changed to the format below:
+
+    .. code-block:: python
+
+        {
+            # in str
+            'seg_fields': List
+             # In uint8 type.
+            'gt_seg_map': np.ndarray (H, W)
+        }
+
+    Required Keys:
+
+    - seg_map_path (str): Path of semantic segmentation ground truth file.
+
+    Added Keys:
+
+    - seg_fields (List)
+    - gt_seg_map (np.uint8)
+
+    Args:
+        reduce_zero_label (bool, optional): Whether reduce all label value
+            by 1. Usually used for datasets where 0 is background label.
+            Defaults to None.
+        imdecode_backend (str): The image decoding backend type. The backend
+            argument for :func:``mmcv.imfrombytes``.
+            See :fun:``mmcv.imfrombytes`` for details.
+            Defaults to 'pillow'.
+        backend_args (dict): Arguments to instantiate a file backend.
+            See https://mmengine.readthedocs.io/en/latest/api/fileio.htm
+            for details. Defaults to None.
+            Notes: mmcv>=2.0.0rc4, mmengine>=0.2.0 required.
+    """
+
+    def __init__(
+        self,
+        reduce_zero_label=None,
+        backend_args=None,
+        imdecode_backend='pillow',
+    ) -> None:
+        super().__init__(
+            with_bbox=False,
+            with_label=False,
+            with_seg=True,
+            with_keypoints=False,
+            imdecode_backend=imdecode_backend,
+            backend_args=backend_args)
+        self.reduce_zero_label = reduce_zero_label
+        if self.reduce_zero_label is not None:
+            warnings.warn('`reduce_zero_label` will be deprecated, '
+                          'if you would like to ignore the zero label, please '
+                          'set `reduce_zero_label=True` when dataset '
+                          'initialized')
+        self.imdecode_backend = imdecode_backend
+
+    def _load_seg_map(self, results):
+        seg_map_path = results['seg_map_path']
+        seg_map_doors_path = seg_map_path.replace('.png', '_doors.png')
+
+        # Load the first channel
+        img_bytes = fileio.get(
+            seg_map_path, backend_args=self.backend_args)
+        channel_1 = mmcv.imfrombytes(
+            img_bytes, flag='unchanged',
+            backend=self.imdecode_backend).squeeze().astype(np.uint8)
+
+        # Load the second channel
+        img_bytes = fileio.get(
+            seg_map_doors_path, backend_args=self.backend_args)
+        channel_2 = mmcv.imfrombytes(
+            img_bytes, flag='unchanged',
+            backend=self.imdecode_backend).squeeze().astype(np.uint8)
+
+        # Stack the channels along the last axis to create the (H, W, C) array
+        gt_multi_label_seg = np.stack([channel_1, channel_2], axis=-1)
+
+        results['gt_seg_map'] = gt_multi_label_seg
+        results['seg_fields'].append('gt_seg_map')
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(reduce_zero_label={self.reduce_zero_label}, '
+        repr_str += f"imdecode_backend='{self.imdecode_backend}', "
+        repr_str += f'backend_args={self.backend_args})'
+        return repr_str
 
 @TRANSFORMS.register_module()
 class LoadImageFromNDArray(LoadImageFromFile):
