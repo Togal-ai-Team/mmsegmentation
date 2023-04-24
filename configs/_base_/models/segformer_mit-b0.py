@@ -36,7 +36,11 @@ model = dict(
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+            type='MultiLabelBCEWithLogitsLoss',
+            use_sigmoid=True,  # This will be ignored in the custom loss class
+            loss_weight=1.0,
+            reduction='mean',
+            class_weight=None)),
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))

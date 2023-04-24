@@ -1,6 +1,3 @@
-
-
-
 _base_ = ['../segformer/segformer_mit-b0_8xb2-160k_ade20k-512x512.py']
 # dataset settings
 dataset_type = 'BaseSegDataset'
