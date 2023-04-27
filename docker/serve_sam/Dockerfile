@@ -47,7 +47,7 @@ COPY mmsegmentation/docker/serve_sam/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R model-server /home/model-server
 
-COPY mmsegmentation/docker/serve/config.properties /home/model-server/config.properties
+COPY mmsegmentation/docker/serve_sam/config.properties /home/model-server/config.properties
 RUN mkdir /home/model-server/model-store && chown -R model-server /home/model-server/model-store
 COPY mmsegmentation/docker/serve/sam.mar /home/model-server/model-store
 EXPOSE 8080 8081 8082
