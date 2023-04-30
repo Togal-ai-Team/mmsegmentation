@@ -58,9 +58,6 @@ class SegformerHead(BaseDecodeHead):
                     size=inputs[0].shape[2:],
                     mode=self.interpolate_mode,
                     align_corners=self.align_corners))
-
         out = self.fusion_conv(torch.cat(outs, dim=1))
-
         out = self.cls_seg(out)
-
         return out

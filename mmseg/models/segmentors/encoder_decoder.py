@@ -126,7 +126,6 @@ class EncoderDecoder(BaseSegmentor):
         x = self.extract_feat(inputs)
         seg_logits = self.decode_head.predict(x, batch_img_metas,
                                               self.test_cfg)
-
         return seg_logits
 
     def _decode_head_forward_train(self, inputs: List[Tensor],
@@ -334,7 +333,6 @@ class EncoderDecoder(BaseSegmentor):
             seg_logit = self.slide_inference(inputs, batch_img_metas)
         else:
             seg_logit = self.whole_inference(inputs, batch_img_metas)
-
         return seg_logit
 
     def aug_test(self, inputs, batch_img_metas, rescale=True):
@@ -351,6 +349,7 @@ class EncoderDecoder(BaseSegmentor):
                                            rescale)
             seg_logit += cur_seg_logit
         seg_logit /= len(inputs)
+        print("in aug_test/encoder_decoder.py: ", seg_logit)
         seg_pred = seg_logit.argmax(dim=1)
         # unravel batch dim
         seg_pred = list(seg_pred)

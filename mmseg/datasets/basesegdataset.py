@@ -78,7 +78,10 @@ class BaseSegDataset(BaseDataset):
             for details. Defaults to None.
             Notes: mmcv>=2.0.0rc4, mmengine>=0.2.0 required.
     """
-    METAINFO: dict = dict()
+    METAINFO: dict = dict(
+        classes=('background', 'wall'),
+        palette=[[120, 120, 120], [255, 0, 122]]
+            )
 
     def __init__(self,
                  ann_file: str = '',

@@ -145,7 +145,6 @@ def inference_model(model: BaseSegmentor,
     # forward the model
     with torch.no_grad():
         results = model.test_step(data)
-
     return results if is_batch else results[0]
 
 

@@ -110,7 +110,7 @@ class SegLocalVisualizer(Visualizer):
 
         self.set_image(image)
 
-        # draw semantic masks
+        # draw semantic mask
         for label, color in zip(labels, colors):
             self.draw_binary_masks(
                 sem_seg == label, colors=[color], alphas=self.alpha)

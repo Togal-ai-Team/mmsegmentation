@@ -196,7 +196,6 @@ class PointHead(BaseCascadeDecodeHead):
         coarse_point_feats = self._get_coarse_point_feats(prev_output, points)
         point_logits = self.forward(fine_grained_point_feats,
                                     coarse_point_feats)
-
         losses = self.loss_by_feat(point_logits, points, batch_data_samples)
 
         return losses

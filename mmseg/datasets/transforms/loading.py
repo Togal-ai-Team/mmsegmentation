@@ -205,17 +205,15 @@ class LoadMultiLabelAnnotations(MMCV_LoadAnnotations):
         channel_1 = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze().astype(np.uint8)
-
         # Load the second channel
         img_bytes = fileio.get(
             seg_map_doors_path, backend_args=self.backend_args)
         channel_2 = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze().astype(np.uint8)
-
         # Stack the channels along the last axis to create the (H, W, C) array
         gt_multi_label_seg = np.stack([channel_1, channel_2], axis=-1)
-
+        gt_multi_label_seg = gt_multi_label_seg.transpose(2, 0, 1)
         results['gt_seg_map'] = gt_multi_label_seg
         results['seg_fields'].append('gt_seg_map')
 

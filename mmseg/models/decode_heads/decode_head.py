@@ -11,7 +11,7 @@ from torch import Tensor
 from mmseg.structures import build_pixel_sampler
 from mmseg.utils import ConfigType, SampleList
 from ..builder import build_loss
-from ..losses import accuracy
+from ..losses import accuracy,multilabel_accuracy
 from ..utils import resize
 
 
@@ -332,8 +332,7 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
                     seg_label,
                     weight=seg_weight,
                     ignore_index=self.ignore_index)
-
-        loss['acc_seg'] = accuracy(
+        loss['acc_seg'] = multilabel_accuracy(
             seg_logits, seg_label, ignore_index=self.ignore_index)
         return loss
 
@@ -349,7 +348,6 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         Returns:
             Tensor: Outputs segmentation logits map.
         """
-
         seg_logits = resize(
             input=seg_logits,
             size=batch_img_metas[0]['img_shape'],
