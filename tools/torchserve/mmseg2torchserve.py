@@ -63,8 +63,10 @@ def mmseg2torchserve(
                 'requirements_file': None,
                 'extra_files': None,
                 'runtime': 'python',
-                'archive_format': 'default'
+                'archive_format': 'default',
+                'config_file': config_file,
             })
+        
         manifest = ModelExportUtils.generate_manifest_json(args)
         package_model(args, manifest)
 
@@ -72,7 +74,7 @@ def mmseg2torchserve(
 def parse_args():
     parser = ArgumentParser(
         description='Convert mmseg models to TorchServe `.mar` format.')
-    parser.add_argument('config', type=str, help='config file path')
+    parser.add_argument('config_file', type=str, help='config file path')
     parser.add_argument('checkpoint', type=str, help='checkpoint file path')
     parser.add_argument(
         '--output-folder',
@@ -108,5 +110,5 @@ if __name__ == '__main__':
         raise ImportError('`torch-model-archiver` is required.'
                           'Try: pip install torch-model-archiver')
 
-    mmseg2torchserve(args.config, args.checkpoint, args.output_folder,
+    mmseg2torchserve(args.config_file, args.checkpoint, args.output_folder,
                      args.model_name, args.model_version, args.force)

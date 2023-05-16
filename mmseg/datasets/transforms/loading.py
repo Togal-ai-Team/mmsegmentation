@@ -198,6 +198,7 @@ class LoadMultiLabelAnnotations(MMCV_LoadAnnotations):
     def _load_seg_map(self, results):
         seg_map_path = results['seg_map_path']
         seg_map_doors_path = seg_map_path.replace('.png', '_doors.png')
+        seg_map_windows_path = seg_map_path.replace('.png', '_windows.png')
 
         # Load the first channel
         img_bytes = fileio.get(
@@ -211,8 +212,14 @@ class LoadMultiLabelAnnotations(MMCV_LoadAnnotations):
         channel_2 = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze().astype(np.uint8)
+        # Load the second channel
+        img_bytes = fileio.get(
+            seg_map_windows_path, backend_args=self.backend_args)
+        channel_3 = mmcv.imfrombytes(
+            img_bytes, flag='unchanged',
+            backend=self.imdecode_backend).squeeze().astype(np.uint8)
         # Stack the channels along the last axis to create the (H, W, C) array
-        gt_multi_label_seg = np.stack([channel_1, channel_2], axis=-1)
+        gt_multi_label_seg = np.stack([channel_1, channel_2, channel_3], axis=-1)
         gt_multi_label_seg = gt_multi_label_seg.transpose(2, 0, 1)
         results['gt_seg_map'] = gt_multi_label_seg
         results['seg_fields'].append('gt_seg_map')
