@@ -11,14 +11,6 @@ from sam.sam_inferencer import SamAutomaticMaskGenerator
 logging.basicConfig(filename='/home/model-server/my_log.log', level=logging.INFO)
 
 
-def cut_image(image):
-    height, width = image.shape[:2]
-    new_height = int(height * 0.875)
-    new_width = int(width * 0.875)
-    image = image[:new_height, :new_width]
-    return image
-
-
 def is_box_close_to_border(tile_border, box, threshold=0):
     x, w, y, h = tile_border
     bx, by, bw, bh = box
@@ -110,7 +102,7 @@ def build_point_grid(n_per_side: int) -> np.ndarray:
     return points
 
 
-def adjust_grid(image, n_per_side=32):
+def adjust_grid(image, n_per_side=60):
     # Generate regular grid
     grid = build_point_grid(n_per_side)
 
@@ -125,29 +117,12 @@ def adjust_grid(image, n_per_side=32):
         patch = image[int(point[1] * height):int(point[1] * height + cell_height),
                 int(point[0] * width):int(point[0] * width + cell_width)]
 
-        # Find contours in the patch
-        contours, _ = cv2.findContours(patch, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Find the black point inside the cropped patch using cv2.minMaxLoc()
+        min_val, _, min_loc, _ = cv2.minMaxLoc(patch)
+        black_point = (int(min_loc[0] + point[0] * width), int(min_loc[1] + point[1] * height))
 
-        if len(contours) > 0:
-            # Find the contour with the largest area
-            biggest_contour = max(contours, key=cv2.contourArea)
-
-            # Find the bounding box of the largest contour
-            x, y, w, h = cv2.boundingRect(biggest_contour)
-
-            # Crop the grayscale patch to the bounding box of the largest contour
-            symbol_patch = patch[y:y + h, x:x + w]
-
-            # Find the black point inside the cropped patch using cv2.minMaxLoc()
-            min_val, _, min_loc, _ = cv2.minMaxLoc(symbol_patch)
-            black_point = (int(min_loc[0] + x + point[0] * width),
-                           int(min_loc[1] + y + point[1] * height))
-
-            # Add the new point to the grid
+        if min_val < 50:
             new_grid.append(black_point)
-        else:
-            # Add the original point to the grid
-            new_grid.append([point[0] * width, point[1] * height])
 
     # normalize grid
     new_grid = np.array(new_grid).astype('float64')
@@ -167,10 +142,7 @@ class MMsegHandler(BaseHandler):
                                    str(properties.get('gpu_id')) if torch.cuda.
                                    is_available() else self.map_location)
         self.manifest = context.manifest
-        self.model = SamAutomaticMaskGenerator(arch='huge',
-                                               # crop_n_layers=2,
-                                               # crop_n_points_downscale_factor=1,
-                                               )
+        self.model = SamAutomaticMaskGenerator(arch='huge')
         self.initialized = True
 
     def preprocess(self, data):
@@ -190,8 +162,8 @@ class MMsegHandler(BaseHandler):
 
             if ocr_boxes:
                 image = remove_text(image, ocr_boxes)
-            # crop bottom and right side of the image on 12.5%
-            image = image[:int(image.shape[0] * 0.875), :int(image.shape[1] * 0.875)]
+            # # crop bottom and right side of the image on 12.5%
+            # image = image[:int(image.shape[0] * 0.875), :int(image.shape[1] * 0.875)]
             images.append(image)
 
         return images
@@ -200,7 +172,7 @@ class MMsegHandler(BaseHandler):
         step = 1024
         window_size = 1024
         # area_size_filter = [200, step*window_size/10]
-        area_size_filter = [200, 100 * 50]  # limit the size to double doors size
+        area_size_filter = [80, 100 * 50]  # limit the size to double doors size
         results = [sliding_window_inference(img, self.model, step=step, window_size=window_size,
                                             area_size_filter=area_size_filter) for img in data]
 
@@ -215,6 +187,5 @@ class MMsegHandler(BaseHandler):
         for image_result in data:
             output.append({
                 'bbox': image_result,
-                # 'stability_score': image_result[1],
             })
         return output
