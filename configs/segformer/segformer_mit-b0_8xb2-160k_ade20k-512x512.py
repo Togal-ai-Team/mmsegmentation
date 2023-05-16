@@ -2,12 +2,12 @@ _base_ = [
     '../_base_/models/segformer_mit-b0.py', '../_base_/datasets/ade20k.py',
     '../_base_/default_runtime.py', '../_base_/schedules/schedule_160k.py'
 ]
-crop_size = (448, 448)
+crop_size = (720, 720)
 data_preprocessor = dict(size=crop_size)
 model = dict(
     data_preprocessor=data_preprocessor,
     pretrained='pretrain/mit_b0.pth',
-    decode_head=dict(num_classes=2))
+    decode_head=dict(num_classes=3))
 
 optim_wrapper = dict(
     _delete_=True,
@@ -26,10 +26,10 @@ param_scheduler = [
         type='LinearLR', start_factor=1e-6, by_epoch=False, begin=0, end=1500),
     dict(
         type='PolyLR',
-        eta_min=0.0,
+        eta_min=0.0000001,
         power=1.0,
         begin=1500,
-        end=160000,
+        end=48000,
         by_epoch=False,
     )
 ]

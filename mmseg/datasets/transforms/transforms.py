@@ -646,13 +646,13 @@ class RandomRotate(BaseTransform):
     def __init__(self,
                  prob,
                  angles=None,
-                 pad_val=0,
-                 seg_pad_val=255,
+                 pad_val=255,
+                 seg_pad_val=0,
                  center=None,
                  auto_bound=False):
         self.prob = prob
         assert prob >= 0 and prob <= 1
-        self.angles = angles if angles is not None else [90, 180, 270]
+        self.angles = angles if angles is not None else [45, 90, 135, 180, 225, 270, 315]
         self.pad_val = pad_val
         self.seg_pad_val = seg_pad_val
         self.center = center

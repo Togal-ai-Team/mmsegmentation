@@ -6,10 +6,10 @@ crop_size = (720, 720)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadMultiLabelAnnotations', reduce_zero_label=False),
-    dict(type='RandomMultiMaskFlip', prob=0.6, direction=['horizontal', 'vertical', 'diagonal']),
-    dict(type='RandomCutOut', prob=0.2, n_holes=(3, 5), cutout_shape=(40, 40), fill_in=(255, 255, 255), seg_fill_in=0),
+    dict(type='RandomMultiMaskFlip', prob=0.75, direction=['horizontal', 'vertical', 'diagonal']),
+    dict(type='RandomCutOut', prob=0.4, n_holes=(1, 3), cutout_shape=(40, 40), fill_in=(255, 255, 255), seg_fill_in=0),
     dict(type='PhotoMetricDistortion'),
-    dict(type='RandomRotate', prob=0.5, angles=[90, 180, 270]),
+    dict(type='RandomRotate', prob=0.5, angles=[45, 90, 135, 180, 225, 270, 315]),
     dict(type='PackSegInputs')
 ]
 test_pipeline = [
@@ -36,7 +36,7 @@ tta_pipeline = [
         ])
 ]
 train_dataloader = dict(
-    batch_size=32,
+    batch_size=24,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type='InfiniteSampler', shuffle=True),
@@ -66,7 +66,7 @@ val_evaluator = dict(type='MultiIoUMetric', iou_metrics=['mIoU'])
 test_evaluator = val_evaluator
 
 resume = True
-load_from = 'work_dirs/segformer_mit-b2_8xb2-160k_ade20k-512x512/iter_48000.pth'
+load_from = 'work_dirs/segformer_mit-b2_8xb2-160k_ade20k-512x512/iter_28000.pth'
 # model settings
 model = dict(
     pretrained=None,

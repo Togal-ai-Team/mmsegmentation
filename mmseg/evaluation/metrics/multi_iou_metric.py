@@ -114,7 +114,7 @@ class MultiIoUMetric(BaseMetric):
         # Aggregate results for each class
         aggregated_results = [
             [sum(class_result[i][j] for class_result in class_results) for j in range(4)]
-                for i in range(2)
+                for i in range(3)
                 ]
         all_metrics = []
         for idx, class_result in enumerate(aggregated_results):
