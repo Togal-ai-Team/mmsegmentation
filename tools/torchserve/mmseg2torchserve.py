@@ -64,7 +64,6 @@ def mmseg2torchserve(
                 'extra_files': None,
                 'runtime': 'python',
                 'archive_format': 'default',
-                'config_file': config_file,
             })
         
         manifest = ModelExportUtils.generate_manifest_json(args)

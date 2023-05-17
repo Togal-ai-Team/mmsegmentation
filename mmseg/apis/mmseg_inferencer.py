@@ -300,7 +300,7 @@ class MMSegInferencer(BaseInferencer):
         results_dict['visualization'] = []
 
         for i, pred in enumerate(preds):
-            pred_data = pred.pred_sem_seg.numpy().data[0]
+            pred_data = pred.pred_sem_seg.numpy().data
             results_dict['predictions'].append(pred_data)
             if visualization is not None:
                 vis = visualization[i]

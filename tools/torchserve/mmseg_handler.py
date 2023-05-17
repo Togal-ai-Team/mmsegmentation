@@ -5,6 +5,7 @@ import os
 import cv2
 import mmcv
 import torch
+import numpy as np
 from mmengine.model.utils import revert_sync_batchnorm
 from ts.torch_handler.base_handler import BaseHandler
 
@@ -49,8 +50,22 @@ class MMsegHandler(BaseHandler):
     def postprocess(self, data):
         output = []
 
-        for image_result in data:
-            _, buffer = cv2.imencode('.png', image_result[0].astype('uint8'))
-            content = buffer.tobytes()
-            output.append(content)
+        image_result = data[0]
+
+        # assuming image_result.pred_sem_seg.data is a PyTorch tensor
+        image_data = image_result.pred_sem_seg.data
+
+        # if your data is in [0,1] range multiply by 255
+        image_data = image_data * 255
+
+        # move the channel dimension to the end and convert to uint8
+        image_data = image_data.permute(1, 2, 0).byte()
+
+        # transfer tensor to cpu and convert to numpy array for OpenCV
+        image_data = image_data.cpu().numpy()
+
+        _, buffer = cv2.imencode('.png', image_data)
+        content = buffer.tobytes()
+        output.append(content)
+
         return output
