@@ -7,6 +7,8 @@ ARG MMCV="2.0.0"
 ARG MMSEG="1.0.0"
 
 ENV PYTHONUNBUFFERED TRUE
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -21,7 +23,7 @@ ENV PATH="/opt/conda/bin:$PATH"
 RUN export FORCE_CUDA=1
 
 # TORCHSEVER
-RUN pip install torchserve torch-model-archiver
+RUN pip install torchserve torch-model-archiver nvgpu pynvml==11.4.1
 
 # MMLAB
 ARG PYTORCH
@@ -29,19 +31,20 @@ ARG CUDA
 RUN ["/bin/bash", "-c", "pip install openmim"]
 RUN ["/bin/bash", "-c", "mim install mmengine"]
 RUN ["/bin/bash", "-c", "mim install mmcv==${MMCV}"]
-RUN pip install mmsegmentation==${MMSEG}
+COPY mmsegmentation mmsegmentation
+RUN pip install -e mmsegmentation
 
 RUN useradd -m model-server \
     && mkdir -p /home/model-server/tmp
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY mmsegmentation/docker/serve/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R model-server /home/model-server
 
-COPY config.properties /home/model-server/config.properties
+COPY mmsegmentation/docker/serve/config.properties /home/model-server/config.properties
 RUN mkdir /home/model-server/model-store && chown -R model-server /home/model-server/model-store
-
+COPY mmsegmentation/docker/serve/ml-multi.mar /home/model-server/model-store
 EXPOSE 8080 8081 8082
 
 USER model-server
