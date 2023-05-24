@@ -45,6 +45,9 @@ def sliding_window_inference(img, mask_generator, step=256, window_size=512,
             crop = img[y:y + window_size, x:x + window_size]
             prompt_grid = adjust_grid(crop)
 
+            if prompt_grid is None:
+                continue
+
             logging.info('prompt_grid_sl_win: {}'.format(prompt_grid[0][0:5]))
 
             mask_generator.point_grids = prompt_grid
@@ -126,10 +129,14 @@ def adjust_grid(image, n_per_side=60):
 
     # normalize grid
     new_grid = np.array(new_grid).astype('float64')
-    new_grid[:, 0] = new_grid[:, 0] / width
-    new_grid[:, 1] = new_grid[:, 1] / height
 
-    return [new_grid]
+    if new_grid.size > 0:
+        new_grid[:, 0] = new_grid[:, 0] / width
+        new_grid[:, 1] = new_grid[:, 1] / height
+
+        return [new_grid]
+    else:
+        return None
 
 
 class MMsegHandler(BaseHandler):
