@@ -25,13 +25,15 @@ model_zoo = {
     'https://download.openmmlab.com/mmsegmentation/v0.5/sam/sam_vit-large-p16_3rdparty_sa1b-1024x1024_20230413-940520da.pth',  # noqa
     'huge':
     'https://download.openmmlab.com/mmsegmentation/v0.5/sam/sam_vit-huge-p16_3rdparty_sa1b-1024x1024_20230413-faaf96f6.pth',  # noqa
+    'custom':
+    '/home/model-server/model-store/sam_finetuned_synth.pth',
 }
 
 
 class SAMInferencer:
 
     def __init__(self, arch: str = 'base') -> None:
-        assert arch in ['base', 'large', 'huge']
+        assert arch in ['base', 'large', 'huge', 'custom']
         self.model = self.init_model(arch)
         self.transform = TRANSFORMS.build(
             dict(
