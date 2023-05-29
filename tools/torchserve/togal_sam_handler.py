@@ -149,7 +149,7 @@ class MMsegHandler(BaseHandler):
                                    str(properties.get('gpu_id')) if torch.cuda.
                                    is_available() else self.map_location)
         self.manifest = context.manifest
-        self.model = SamAutomaticMaskGenerator(arch='custom')
+        self.model = SamAutomaticMaskGenerator(arch='base')
         self.initialized = True
 
     def preprocess(self, data):
