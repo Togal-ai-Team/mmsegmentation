@@ -2,7 +2,8 @@ _base_ = ['../segformer/segformer_mit-b0_8xb2-160k_ade20k-512x512.py']
 # dataset settings
 dataset_type = 'BaseSegDataset'
 data_root = 'data'
-crop_size = (720, 720)
+crop_size = (960, 960)
+stride_size = (900, 900)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadMultiLabelAnnotations', reduce_zero_label=False),
@@ -16,7 +17,6 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     # add loading annotation after ``Resize`` because ground truth
     # does not need to do resize data transform
-    dict(type='LoadMultiLabelAnnotations', reduce_zero_label=False),
     dict(type='PackSegInputs')
 ]
 img_ratios = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]
@@ -72,4 +72,5 @@ model = dict(
     pretrained=None,
     backbone=dict(
         embed_dims=64, num_heads=[1, 2, 5, 8], num_layers=[3, 4, 6, 3]),
-    decode_head=dict(in_channels=[64, 128, 320, 512]))
+    decode_head=dict(in_channels=[64, 128, 320, 512]),
+    test_cfg=dict(mode='slide', crop_size=crop_size, stride=stride_size))
