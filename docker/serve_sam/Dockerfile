@@ -24,7 +24,7 @@ RUN export FORCE_CUDA=1
 
 # TORCHSEVER
 RUN pip install torchserve torch-model-archiver nvgpu protobuf==3.20.1 tensorboardX timm efficientnet_pytorch pretrainedmodels
-
+RUN pip install python-logging-loki
 # MMLAB
 ARG PYTORCH
 ARG CUDA
