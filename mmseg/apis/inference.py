@@ -86,6 +86,9 @@ def init_model(config: Union[str, Path, Config],
             }
     model.cfg = config  # save the config in the model for convenience
     model.to(device)
+    use_fp16 = True
+    if use_fp16:
+        model.half()
     model.eval()
     return model
 

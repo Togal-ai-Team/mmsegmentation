@@ -54,17 +54,18 @@ class SegDataPreProcessor(BaseDataPreprocessor):
     """
 
     def __init__(
-        self,
-        mean: Sequence[Number] = None,
-        std: Sequence[Number] = None,
-        size: Optional[tuple] = None,
-        size_divisor: Optional[int] = None,
-        pad_val: Number = 0,
-        seg_pad_val: Number = 255,
-        bgr_to_rgb: bool = False,
-        rgb_to_bgr: bool = False,
-        batch_augments: Optional[List[dict]] = None,
-        test_cfg: dict = None,
+            self,
+            mean: Sequence[Number] = None,
+            std: Sequence[Number] = None,
+            size: Optional[tuple] = None,
+            size_divisor: Optional[int] = None,
+            pad_val: Number = 0,
+            seg_pad_val: Number = 255,
+            bgr_to_rgb: bool = False,
+            rgb_to_bgr: bool = False,
+            batch_augments: Optional[List[dict]] = None,
+            test_cfg: dict = None,
+            use_fp16: bool = True,
     ):
         super().__init__()
         self.size = size
@@ -94,7 +95,7 @@ class SegDataPreProcessor(BaseDataPreprocessor):
 
         # Support different padding methods in testing
         self.test_cfg = test_cfg
-
+        self.use_fp16 = use_fp16
     def forward(self, data: dict, training: bool = False) -> Dict[str, Any]:
         """Perform normalization、padding and bgr2rgb conversion based on
         ``BaseDataPreprocessor``.
@@ -109,13 +110,29 @@ class SegDataPreProcessor(BaseDataPreprocessor):
         data = self.cast_data(data)  # type: ignore
         inputs = data['inputs']
         data_samples = data.get('data_samples', None)
-        # TODO: whether normalize should be after stack_batch
-        if self.channel_conversion and inputs[0].size(0) == 3:
-            inputs = [_input[[2, 1, 0], ...] for _input in inputs]
+        def modify_inputs_in_place(inputs, channel_conversion, enable_normalize, mean, std, use_fp16):
+            for i, _input in enumerate(inputs):
+                if self.use_fp16:
+                    # Convert to float16 if it's not already
+                    if _input.dtype != torch.float16:
+                        _input = _input.to(dtype=torch.float16)
+                else:
+                    if _input.dtype != torch.float32:
+                        _input = _input.to(dtype=torch.float32)
 
-        inputs = [_input.float() for _input in inputs]
-        if self._enable_normalize:
-            inputs = [(_input - self.mean) / self.std for _input in inputs]
+                # Convert channels from RGB to BGR if needed
+                if channel_conversion and _input.size(0) == 3:
+                    _input.copy_(_input[[2, 1, 0], ...])
+
+                # Normalize if enabled
+                if enable_normalize:
+                    _input.sub_(mean).div_(std)
+
+                # Update the list in-place
+                inputs[i] = _input.half() if use_fp16 else _input
+
+
+        modify_inputs_in_place(inputs, self.channel_conversion, self._enable_normalize, self.mean, self.std, self.use_fp16)
 
         if training:
             assert data_samples is not None, ('During training, ',
